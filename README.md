@@ -1,7 +1,35 @@
-# ruby-dev-test-1
+📁 Sistema de Gerenciamento de Arquivos (Teste CLICKSIGN)
 
-Desenvolver a camada de modelos de um sistema de arquivos persistido em um banco de dados SQL onde seja possível criar diretórios e arquivos. Os diretórios poderão conter sub-diretórios e arquivos. O conteúdo dos arquivos podem estar ser persistidos como blob, S3 ou mesmo em disco.
+Este projeto é uma solução para o desafio técnico da CLICKSIGN. Ele implementa a camada de modelos de um sistema de gerenciamento de arquivos com suporte a diretórios aninhados e upload de arquivos utilizando ActiveStorage.
 
-A soluçãos deverá ser escrita majoritariamente em Ruby com framework Ruby on Rails.
+🧩 Funcionalidades
+  - Criar diretórios e subdiretórios recursivamente.
+  - Criar arquivos dentro de diretórios.
+  - Upload de arquivos com conteúdo persistido via ActiveStorage.
+  - Relacionamentos entre diretórios (pai/filho).
+  - Validação de presença do nome dos diretórios.
+  - Testes automatizados com RSpec.
 
-Realizar um fork deste repositório e abrir o PR ao finalizar.
+🛠️ Tecnologias Utilizadas
+  - Ruby 3.4.1
+  - Rails 8.0.2
+  - PostgreSQL
+  - RSpec
+  - Active Storage
+
+▶️ Como executar localmente
+  1. Clone o repositório
+  2. Instale as dependências
+    - bundle install
+  3. Configure o banco de dados
+    - rails db:create db:migrate db:seed
+  4. Execute o servidor
+   - rails server
+
+🧪 Executando os testes
+  - bundle exec rspec
+
+📝 Observações
+  - O projeto foi focado na camada de modelos, conforme exigido no teste.
+  - Os arquivos são persistidos em disco local (pasta /storage) usando ActiveStorage::DiskService.
+  - O sistema pode ser facilmente adaptado para persistir arquivos em S3, Azure Blob, etc.

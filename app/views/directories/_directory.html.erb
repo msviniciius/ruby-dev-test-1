@@ -1,0 +1,20 @@
+<tr>
+  <td style="padding-left: <%= indent * 20 %>px;">
+    📁 <strong><%= directory.name %></strong>
+  </td>
+  <td>Diretório</td>
+  <td><%= l(directory.created_at, format: :short) %></td>
+</tr>
+
+<% directory.file_entries.each do |file| %>
+  <tr>
+    <td style="padding-left: <%= (indent + 1) * 20 %>px;">📄 <%= file.name %></td>
+    <td>Arquivo</td>
+    <td><%= l(file.created_at, format: :short) %></td>
+    <td>–</td>
+  </tr>
+<% end %>
+
+<% directory.subdirectories.each do |sub| %>
+  <%= render partial: 'directory', locals: { directory: sub, indent: indent + 1 } %>
+<% end %>
