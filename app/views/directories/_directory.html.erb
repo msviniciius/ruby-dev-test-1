@@ -1,20 +1,30 @@
-<tr>
-  <td style="padding-left: <%= indent * 20 %>px;">
-    📁 <strong><%= directory.name %></strong>
-  </td>
-  <td>Diretório</td>
-  <td><%= l(directory.created_at, format: :short) %></td>
-</tr>
+<li class="directory indent-<%= indent %>" aria-expanded="false">
+  <div class="directory-header" role="button" aria-expanded="false">
+    <span class="toggle-icon"></span>
+    <span class="directory-name"><i class="fa-solid fa-folder"></i> <strong><%= directory.name %></strong></span>
+    <span class="item-type">Diretório</span>
+    <span class="item-date"><%= l(directory.created_at, format: :short) %></span>
+  </div>
 
-<% directory.file_entries.each do |file| %>
-  <tr>
-    <td style="padding-left: <%= (indent + 1) * 20 %>px;">📄 <%= file.name %></td>
-    <td>Arquivo</td>
-    <td><%= l(file.created_at, format: :short) %></td>
-    <td>–</td>
-  </tr>
-<% end %>
+  <% if directory.file_entries.any? %>
+    <ul class="file-list list-unstyled indent-<%= indent + 1 %>">
+      <% directory.file_entries.each do |file| %>
+        <li class="file-item">
+          <span class="file-name"><i class="fa-solid fa-file"></i> <%= file.name %></span>
+          <span class="item-type">Arquivo</span>
+          <span class="item-date"><%= l(file.created_at, format: :short) %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
 
-<% directory.subdirectories.each do |sub| %>
-  <%= render partial: 'directory', locals: { directory: sub, indent: indent + 1 } %>
-<% end %>
+  <% if directory.subdirectories.any? %>
+    <ul class="subdirectory-list list-unstyled indent-<%= indent + 1 %>">
+      <% directory.subdirectories.each do |sub| %>
+        <li class="subdirectory-item">
+          <%= render partial: 'directory', locals: { directory: sub, indent: indent + 1 } %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</li>

@@ -1,16 +1,137 @@
-<h1>Gerenciador de Arquivos</h1>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gerenciador de Arquivos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    .file-manager {
+      margin-top: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .file-manager-header {
+      display: flex;
+      background-color: #f8f9fa;
+      border-bottom: 2px solid #dee2e6;
+      padding: 10px 15px;
+      font-weight: 600;
+      color: #495057;
+    }
+    .file-manager-header span {
+      flex: 1;
+      padding-left: 20px; /* Alinha com a indentação inicial */
+    }
+    .file-manager-header span:nth-child(1) { flex: 3; } /* Mais espaço para "Local" */
+    .file-manager-header span:nth-child(2) { flex: 1; }
+    .file-manager-header span:nth-child(3) { flex: 1; }
+    .directory {
+      padding: 5px 0;
+      transition: background-color 0.2s ease;
+    }
+    .directory-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 15px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+    }
+    .directory-header:hover {
+      background-color: #e9ecef;
+    }
+    .file-list, .subdirectory-list {
+      display: none;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+    }
+    .expanded > .file-list, .expanded > .subdirectory-list {
+      display: block;
+      max-height: 1000px;
+      opacity: 1;
+    }
+    .toggle-icon::before {
+      content: '\f054'; /* Font Awesome: chevron-right (fechado) */
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      display: inline-block;
+      margin-right: 8px;
+      color: #495057;
+    }
+    .expanded .toggle-icon::before {
+      content: '\f078'; /* Font Awesome: chevron-down (aberto) */
+    }
+    .indent-0 { padding-left: 0px; }
+    .indent-1 { padding-left: 20px; }
+    .indent-2 { padding-left: 40px; }
+    .indent-3 { padding-left: 60px; }
+    .file-item, .subdirectory-item {
+      padding: 5px 0;
+    }
+    .file-item:hover, .directory-header:hover {
+      background-color: #f1f3f5;
+      border-radius: 4px;
+    }
+    .directory-name, .file-name {
+      flex: 3;
+      color: #212529;
+    }
+    .item-type, .item-date {
+      flex: 1;
+      color: #6c757d;
+      font-size: 0.9em;
+    }
+    .fa-folder, .fa-file {
+      margin-right: 8px;
+      color: #007bff;
+    }
+    @media (max-width: 576px) {
+      .file-manager-header span, .directory-header, .file-item {
+        font-size: 0.85em;
+      }
+      .item-type, .item-date {
+        flex: 1.5;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="my-4">Gerenciador de Arquivos</h1>
 
-<table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>Local</th>
-      <th>Tipo</th>
-      <th>Criado em</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @directories.each do |dir| %>
-      <%= render partial: 'directory', locals: { directory: dir, indent: 0 } %>
-    <% end %>
-  </tbody>
-</table>
+    <div class="file-manager-header">
+      <span>Local</span>
+      <span>Tipo</span>
+      <span>Criado em</span>
+    </div>
+    <ul class="file-manager list-unstyled">
+      <% @directories.each do |dir| %>
+        <%= render partial: 'directory', locals: { directory: dir, indent: 0 } %>
+      <% end %>
+    </ul>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.directory-header').forEach(header => {
+        header.addEventListener('click', function(event) {
+          event.stopPropagation();
+          const li = this.closest('li.directory');
+          const isExpanding = !li.classList.contains('expanded');
+
+          li.classList.toggle('expanded');
+          this.setAttribute('aria-expanded', isExpanding ? 'true' : 'false');
+
+          if (!isExpanding) {
+            li.querySelectorAll('.directory').forEach(subLi => {
+              subLi.classList.remove('expanded');
+              subLi.querySelector('.directory-header').setAttribute('aria-expanded', 'false');
+            });
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
