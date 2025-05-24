@@ -1,10 +1,10 @@
 class DirectoriesController < ApplicationController
-  before_action :set_directory, only: [:edit, :update, :destroy, :new_file, :create_file]
+  before_action :set_directory, only: [ :edit, :update, :destroy, :new_file, :create_file ]
 
   def index
     @directories = Directory.where(parent_id: nil).includes(:subdirectories, :file_entries).order(:created_at)
   end
-  
+
   def show
     redirect_to directories_path
   end
@@ -16,7 +16,7 @@ class DirectoriesController < ApplicationController
   def create
     @directory = Directory.new(directory_params)
     if @directory.save
-      redirect_to directories_path, notice: 'Diretório criado com sucesso!'
+      redirect_to directories_path, notice: "Diretório criado com sucesso!"
     else
       render :new
     end
@@ -28,7 +28,7 @@ class DirectoriesController < ApplicationController
   def update
     @directory = Directory.find(params[:id])
     if @directory.update(directory_params)
-      redirect_to directories_path, notice: 'Diretório atualizado com sucesso!'
+      redirect_to directories_path, notice: "Diretório atualizado com sucesso!"
     else
       render :edit
     end
@@ -40,20 +40,20 @@ class DirectoriesController < ApplicationController
         format.json do
           render json: {
             confirm: true,
-            message: 'Este diretório contém arquivos ou subdiretórios. Você tem certeza que deseja excluí-lo?',
+            message: "Este diretório contém arquivos ou subdiretórios. Você tem certeza que deseja excluí-lo?"
           }, status: :ok
         end
         format.html do
-          flash[:alert] = 'Este diretório contém arquivos ou subdiretórios. Você tem certeza que deseja excluí-lo?'
+          flash[:alert] = "Este diretório contém arquivos ou subdiretórios. Você tem certeza que deseja excluí-lo?"
           redirect_to directories_path
         end
       end
     else
       @directory.destroy
       respond_to do |format|
-        format.json { render json: { message: 'Diretório excluído com sucesso!' }, status: :ok }
+        format.json { render json: { message: "Diretório excluído com sucesso!" }, status: :ok }
         format.html do
-          flash[:notice] = 'Diretório excluído com sucesso!' 
+          flash[:notice] = "Diretório excluído com sucesso!"
           redirect_to directories_path
         end
       end
@@ -67,7 +67,7 @@ class DirectoriesController < ApplicationController
   def create_file
     @file_entry = @directory.file_entries.build(file_entry_params)
     if @file_entry.save
-      redirect_to directory_path(@directory), notice: 'Arquivo criado com sucesso!'
+      redirect_to directory_path(@directory), notice: "Arquivo criado com sucesso!"
     else
       render :new_file, status: :unprocessable_entity
     end
@@ -78,7 +78,7 @@ class DirectoriesController < ApplicationController
   def set_directory
     @directory = Directory.find(params[:id] || params[:directory_id])
   rescue ActiveRecord::RecordNotFound
-    render json: { error: 'Diretório não encontrado' }, status: :not_found
+    render json: { error: "Diretório não encontrado" }, status: :not_found
   end
 
   def directory_params
