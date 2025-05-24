@@ -4,6 +4,7 @@
   <title>Gerenciador de Arquivos</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <%= csrf_meta_tags %>
   <style>
     .file-manager {
       margin-top: 20px;
@@ -19,11 +20,12 @@
     }
     .file-manager-header span {
       flex: 1;
-      padding-left: 20px; /* Alinha com a indentação inicial */
+      padding-left: 20px;
     }
-    .file-manager-header span:nth-child(1) { flex: 3; } /* Mais espaço para "Local" */
+    .file-manager-header span:nth-child(1) { flex: 3; }
     .file-manager-header span:nth-child(2) { flex: 1; }
     .file-manager-header span:nth-child(3) { flex: 1; }
+    .file-manager-header span:nth-child(4) { flex: 1; text-align: right; }
     .directory {
       padding: 5px 0;
       transition: background-color 0.2s ease;
@@ -51,7 +53,7 @@
       opacity: 1;
     }
     .toggle-icon::before {
-      content: '\f054'; /* Font Awesome: chevron-right (fechado) */
+      content: '\f054';
       font-family: 'Font Awesome 6 Free';
       font-weight: 900;
       display: inline-block;
@@ -59,7 +61,7 @@
       color: #495057;
     }
     .expanded .toggle-icon::before {
-      content: '\f078'; /* Font Awesome: chevron-down (aberto) */
+      content: '\f078';
     }
     .indent-0 { padding-left: 0px; }
     .indent-1 { padding-left: 20px; }
@@ -81,6 +83,14 @@
       color: #6c757d;
       font-size: 0.9em;
     }
+    .item-actions {
+      flex: 1;
+      text-align: right;
+    }
+    .item-actions a {
+      margin-left: 10px;
+      font-size: 0.9em;
+    }
     .fa-folder, .fa-file {
       margin-right: 8px;
       color: #007bff;
@@ -89,7 +99,7 @@
       .file-manager-header span, .directory-header, .file-item {
         font-size: 0.85em;
       }
-      .item-type, .item-date {
+      .item-type, .item-date, .item-actions {
         flex: 1.5;
       }
     }
@@ -98,22 +108,51 @@
 <body>
   <div class="container">
     <h1 class="my-4">Gerenciador de Arquivos</h1>
+    <%= link_to 'Novo Diretório', new_directory_path, class: 'btn btn-primary mb-3', style: 'margin-left: 1160px;' %>
+
+    <% if notice %>
+      <div class="alert alert-success"><%= notice %></div>
+    <% end %>
+    <% if alert %>
+      <div class="alert alert-danger"><%= alert %></div>
+    <% end %>
 
     <div class="file-manager-header">
       <span>Local</span>
       <span>Tipo</span>
       <span>Criado em</span>
+      <span>Ações</span>
     </div>
     <ul class="file-manager list-unstyled">
       <% @directories.each do |dir| %>
         <%= render partial: 'directory', locals: { directory: dir, indent: 0 } %>
       <% end %>
     </ul>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirmar Exclusão</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <p id="deleteConfirmationMessage"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteButton">Excluir</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // Expansão/Colapso
       document.querySelectorAll('.directory-header').forEach(header => {
         header.addEventListener('click', function(event) {
           event.stopPropagation();
@@ -129,6 +168,73 @@
               subLi.querySelector('.directory-header').setAttribute('aria-expanded', 'false');
             });
           }
+        });
+      });
+
+      // Manipulação de Exclusão
+      document.querySelectorAll('.delete-directory').forEach(link => {
+        link.addEventListener('click', function(event) {
+          event.preventDefault();
+          const deleteUrl = this.href;
+          const modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+          const confirmButton = document.getElementById('confirmDeleteButton');
+          const messageElement = document.getElementById('deleteConfirmationMessage');
+          const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+          console.log('Iniciando verificação de exclusão para:', deleteUrl);
+
+          // Verifica se o diretório tem subdiretórios via AJAX
+          fetch(deleteUrl, {
+            method: 'DELETE',
+            headers: {
+              'Accept': 'application/json',
+              'X-CSRF-Token': csrfToken
+            }
+          })
+          .then(response => {
+            console.log('Resposta do servidor:', response.status, response);
+            if (!response.ok) {
+              throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('Dados recebidos:', data);
+            if (data.confirm) {
+              // Diretório tem subdiretórios, mostra o modal
+              messageElement.textContent = data.message;
+              confirmButton.onclick = function() {
+                console.log('Confirmação de exclusão para:', deleteUrl);
+                fetch(deleteUrl + '?confirm=true', {
+                  method: 'DELETE',
+                  headers: {
+                    'X-CSRF-Token': csrfToken
+                  }
+                })
+                .then(response => {
+                  console.log('Resposta da exclusão:', response.status);
+                  if (response.ok) {
+                    window.location.reload();
+                  } else {
+                    alert('Erro ao excluir o diretório.');
+                  }
+                })
+                .catch(error => {
+                  console.error('Erro na exclusão:', error);
+                  alert('Erro ao excluir o diretório.');
+                });
+                modal.hide();
+              };
+              modal.show();
+            } else {
+              // Diretório sem subdiretórios, exclui diretamente
+              window.location.reload();
+            }
+          })
+          .catch(error => {
+            console.error('Erro na verificação:', error);
+            alert('Erro ao verificar o diretório: ' + error.message);
+          });
         });
       });
     });
