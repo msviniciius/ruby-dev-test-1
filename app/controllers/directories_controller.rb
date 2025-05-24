@@ -1,12 +1,12 @@
 class DirectoriesController < ApplicationController
-  before_action :set_directory, only: [:show, :edit, :update, :destroy, :new_file, :create_file]
+  before_action :set_directory, only: [:edit, :update, :destroy, :new_file, :create_file]
 
   def index
     @directories = Directory.where(parent_id: nil).includes(:subdirectories, :file_entries).order(:created_at)
   end
   
   def show
-    @directories = @directory
+    redirect_to directories_path
   end
 
   def new
@@ -35,16 +35,28 @@ class DirectoriesController < ApplicationController
   end
 
   def destroy
-    sub_count = @directory.subdirectories.count
-    if sub_count > 0
-      redirect_to directories_path, alert: 'Não é possível excluir um diretório que contém subdiretórios.'
-      render json: {
-        confirm: true,
-        message: 'Este diretório contém subdiretórios. Tem certeza que deseja excluí-lo?',
-      }
+    if (@directory.subdirectories.any? || @directory.file_entries.any?) && !params[:confirm]
+      respond_to do |format|
+        format.json do
+          render json: {
+            confirm: true,
+            message: 'Este diretório contém arquivos ou subdiretórios. Você tem certeza que deseja excluí-lo?',
+          }, status: :ok
+        end
+        format.html do
+          flash[:alert] = 'Este diretório contém arquivos ou subdiretórios. Você tem certeza que deseja excluí-lo?'
+          redirect_to directories_path
+        end
+      end
     else
       @directory.destroy
-      redirect_to directories_path, notice: 'Diretório excluído com sucesso!'
+      respond_to do |format|
+        format.json { render json: { message: 'Diretório excluído com sucesso!' }, status: :ok }
+        format.html do
+          flash[:notice] = 'Diretório excluído com sucesso!' 
+          redirect_to directories_path
+        end
+      end
     end
   end
 
@@ -64,7 +76,9 @@ class DirectoriesController < ApplicationController
   private
 
   def set_directory
-    @directory = Directory.find(params[:directory_id])
+    @directory = Directory.find(params[:id] || params[:directory_id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Diretório não encontrado' }, status: :not_found
   end
 
   def directory_params

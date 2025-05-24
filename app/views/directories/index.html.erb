@@ -171,70 +171,47 @@
         });
       });
 
-      // Manipulação de Exclusão
       document.querySelectorAll('.delete-directory').forEach(link => {
         link.addEventListener('click', function(event) {
           event.preventDefault();
-          const deleteUrl = this.href;
-          const modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
-          const confirmButton = document.getElementById('confirmDeleteButton');
-          const messageElement = document.getElementById('deleteConfirmationMessage');
-          const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+          const url = this.href;
 
-          console.log('Iniciando verificação de exclusão para:', deleteUrl);
-
-          // Verifica se o diretório tem subdiretórios via AJAX
-          fetch(deleteUrl, {
+          fetch(url, {
             method: 'DELETE',
             headers: {
-              'Accept': 'application/json',
-              'X-CSRF-Token': csrfToken
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+              'Accept': 'application/json'
             }
           })
-          .then(response => {
-            console.log('Resposta do servidor:', response.status, response);
-            if (!response.ok) {
-              throw new Error(`Erro HTTP: ${response.status}`);
-            }
-            return response.json();
-          })
+          .then(response => response.json())
           .then(data => {
-            console.log('Dados recebidos:', data);
             if (data.confirm) {
-              // Diretório tem subdiretórios, mostra o modal
-              messageElement.textContent = data.message;
-              confirmButton.onclick = function() {
-                console.log('Confirmação de exclusão para:', deleteUrl);
-                fetch(deleteUrl + '?confirm=true', {
+              // Show confirmation modal
+              const modal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+              document.getElementById('deleteConfirmationMessage').textContent = data.message;
+              document.getElementById('confirmDeleteButton').onclick = () => {
+                fetch(url + '?confirm=true', {
                   method: 'DELETE',
                   headers: {
-                    'X-CSRF-Token': csrfToken
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
                   }
                 })
-                .then(response => {
-                  console.log('Resposta da exclusão:', response.status);
-                  if (response.ok) {
+                .then(response => response.json())
+                .then(data => {
+                  if (data.message) {
+                    // Reload the page to reflect changes
                     window.location.reload();
-                  } else {
-                    alert('Erro ao excluir o diretório.');
                   }
-                })
-                .catch(error => {
-                  console.error('Erro na exclusão:', error);
-                  alert('Erro ao excluir o diretório.');
                 });
-                modal.hide();
               };
               modal.show();
-            } else {
-              // Diretório sem subdiretórios, exclui diretamente
+            } else if (data.message) {
+              // Reload the page to reflect changes
               window.location.reload();
             }
           })
-          .catch(error => {
-            console.error('Erro na verificação:', error);
-            alert('Erro ao verificar o diretório: ' + error.message);
-          });
+          .catch(error => console.error('Error:', error));
         });
       });
     });

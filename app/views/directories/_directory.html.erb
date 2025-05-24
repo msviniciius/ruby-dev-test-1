@@ -6,10 +6,10 @@
     <span class="item-date"><%= l(directory.created_at, format: :short) %></span>
     <span class="item-actions">
       <%= link_to directory_new_file_entry_path(directory), class: 'text-primary', title: 'Upload de Arquivo', data: { bs_toggle: 'tooltip' } do %>
-        <i class="fa-solid fa-folder"></i>
+        <i class="fa-solid fa-paperclip"></i>
       <% end %>
       <%= link_to new_directory_path(parent_id: directory.id), class: 'text-success', title: 'Novo Subdiretório', data: { bs_toggle: 'tooltip' } do %>
-        <i class="fa-solid fa-files ms-1"></i>
+        <i class="fa-solid fa-folder-plus ms-1"></i>
       <% end %>
       <%= link_to edit_directory_path(directory), class: 'text-primary', title: 'Editar', data: { bs_toggle: 'tooltip' } do %>
         <i class="fa-solid fa-marker"></i>
