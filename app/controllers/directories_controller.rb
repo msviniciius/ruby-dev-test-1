@@ -1,8 +1,8 @@
 class DirectoriesController < ApplicationController
-  before_action :set_directory, only: [:show, :edit, :update, :destroy]
+  before_action :set_directory, only: [:show, :edit, :update, :destroy, :new_file, :create_file]
 
   def index
-    @directories = Directory.where(parent_id: nil).includes(:subdirectories, :file_entries)
+    @directories = Directory.where(parent_id: nil).includes(:subdirectories, :file_entries).order(:created_at)
   end
   
   def show
@@ -48,15 +48,30 @@ class DirectoriesController < ApplicationController
     end
   end
 
+  def new_file
+    @file_entry = @directory.file_entries.build
+  end
+
+  def create_file
+    @file_entry = @directory.file_entries.build(file_entry_params)
+    if @file_entry.save
+      redirect_to directory_path(@directory), notice: 'Arquivo criado com sucesso!'
+    else
+      render :new_file, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def set_directory
-    @directory = Directory.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
-    redirect_to directories_path, alert: 'Diretório não encontrado.'
+    @directory = Directory.find(params[:directory_id])
   end
 
   def directory_params
     params.require(:directory).permit(:name, :parent_id)
+  end
+
+  def file_entry_params
+    params.require(:file_entry).permit(:name, :file)
   end
 end

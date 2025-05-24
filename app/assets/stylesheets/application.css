@@ -21,3 +21,29 @@ li {
 strong {
   color: #2c3e50;
 }
+
+.directory-header, .file-header {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Espaçamento entre colunas */
+}
+
+.directory-name, .file-name {
+  flex: 1; /* Ocupa espaço disponível, ajustando automaticamente */
+  min-width: 200px; /* Largura mínima para consistência */
+}
+
+.item-type {
+  width: 100px; /* Largura fixa para a coluna de tipo */
+  text-align: center;
+}
+
+.item-date {
+  width: 120px; /* Largura fixa para a coluna de data */
+  text-align: center;
+}
+
+.item-actions {
+  width: 100px; /* Largura fixa para a coluna de ações */
+  text-align: right;
+}

@@ -5,8 +5,11 @@
     <span class="item-type">Diretório</span>
     <span class="item-date"><%= l(directory.created_at, format: :short) %></span>
     <span class="item-actions">
+      <%= link_to directory_new_file_entry_path(directory), class: 'text-primary', title: 'Upload de Arquivo', data: { bs_toggle: 'tooltip' } do %>
+        <i class="fa-solid fa-folder"></i>
+      <% end %>
       <%= link_to new_directory_path(parent_id: directory.id), class: 'text-success', title: 'Novo Subdiretório', data: { bs_toggle: 'tooltip' } do %>
-        <i class="fa-solid fa-file ms-1"></i>
+        <i class="fa-solid fa-files ms-1"></i>
       <% end %>
       <%= link_to edit_directory_path(directory), class: 'text-primary', title: 'Editar', data: { bs_toggle: 'tooltip' } do %>
         <i class="fa-solid fa-marker"></i>
@@ -21,11 +24,13 @@
     <ul class="file-list list-unstyled indent-<%= indent + 1 %>">
       <% directory.file_entries.each do |file| %>
         <li class="file-item">
-          <span class="file-name"><i class="fa-solid fa-file"></i> <%= file.name %></span>
-          <span class="item-type">Arquivo</span>
-          <span class="item-date"><%= l(file.created_at, format: :short) %></span>
-          <span class="item-actions">
-          </span>
+          <div class="file-header">
+            <span class="file-name"><i class="fa-solid fa-file"></i> <%= file.name %></span>
+            <span class="item-type">Arquivo</span>
+            <span class="item-date"><%= l(file.created_at, format: :short) %></span>
+            <span class="item-actions">
+            </span>
+          </div>
         </li>
       <% end %>
     </ul>
