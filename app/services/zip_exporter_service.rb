@@ -1,10 +1,12 @@
 require "zip"
 
 class ZipExporterService
+  # gera um arquivo ZIP a partir de um diretório e seu conteúdo de forma recursiva
   def initialize(directory)
     @directory = directory
   end
 
+  # gera o arquivo ZIP
   def generate_zip
     buffer = Zip::OutputStream.write_buffer do |zip|
       add_directory_to_zip(@directory, zip)
@@ -16,10 +18,10 @@ class ZipExporterService
 
   private
 
+  # adiciona o diretório e seu conteúdo ao arquivo ZIP
   def add_directory_to_zip(directory, zipfile, path_prefix = "")
     current_path = path_prefix.present? ? "#{path_prefix}/#{directory.name}" : directory.name
 
-    # adiciona os arquivos deste diretório
     directory.file_entries.each do |file_entry|
       next unless file_entry.file.attached?
 
