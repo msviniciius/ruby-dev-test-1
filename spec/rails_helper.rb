@@ -70,8 +70,20 @@ RSpec.configure do |config|
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
 
-  Shoulda::Matchers.configure do |config|
-    config.integrate do |with|
+  RSpec.configure do |config|
+    # Coloque aqui as configurações relacionadas ao RSpec
+    config.fixture_paths = [
+      Rails.root.join('spec/fixtures')
+    ]
+    config.include FactoryBot::Syntax::Methods
+
+    config.use_transactional_fixtures = true
+    config.filter_rails_from_backtrace!
+  end
+
+  # E fora do RSpec.configure, configure o Shoulda Matchers
+  Shoulda::Matchers.configure do |shoulda_config|
+    shoulda_config.integrate do |with|
       with.test_framework :rspec
       with.library :rails
     end
