@@ -5,6 +5,10 @@ Rails.application.routes.draw do
     get "files", to: "directories#index", as: :file_entries
     get "files/new", to: "directories#new_file", as: :new_file_entry
     post "files", to: "directories#create_file"
+
+    member do
+      get :download
+    end
   end
 
   root "directories#index"

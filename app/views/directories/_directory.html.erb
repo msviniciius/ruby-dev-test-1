@@ -17,6 +17,9 @@
       <%= link_to directory_path(directory), method: :delete, class: 'text-danger delete-directory', title: 'Excluir', data: { bs_toggle: 'tooltip' } do %>
         <i class="fa-solid fa-trash"></i>
       <% end %>
+      <%= link_to download_directory_path(directory), class: 'text-info', title: 'Download', data: { bs_toggle: 'tooltip' } do %>
+        <i class="fa-solid fa-download"></i>
+      <% end %>
     </span>
   </div>
 

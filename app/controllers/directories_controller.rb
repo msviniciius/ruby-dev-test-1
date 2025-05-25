@@ -1,5 +1,7 @@
+require 'zip'
+
 class DirectoriesController < ApplicationController
-  before_action :set_directory, only: [ :edit, :update, :destroy, :new_file, :create_file ]
+  before_action :set_directory, only: [ :edit, :update, :destroy, :new_file, :create_file, :download]
 
   def index
     @directories = Directory.where(parent_id: nil).includes(:subdirectories, :file_entries).order(:created_at)
@@ -73,6 +75,26 @@ class DirectoriesController < ApplicationController
     end
   end
 
+  def download
+    temp = Tempfile.new(["directory-#{@directory.id}", '.zip']) # criando o arquivo zip inicialmente vazio
+
+    begin
+      Zip::OutputStream.open(temp) { |z| }
+
+      Zip::File.open(temp.path, Zip::File::CREATE) do |zipfile|
+        add_directory_to_zip(@directory, zipfile)
+      end
+
+      send_data File.read(temp.path),
+                fype: 'application/zip',
+                filename: "#{@directory.name.parameterize}.zip"
+      
+    ensure
+      temp.close
+      temp.unlink
+    end
+  end
+
   private
 
   def set_directory
@@ -87,5 +109,24 @@ class DirectoriesController < ApplicationController
 
   def file_entry_params
     params.require(:file_entry).permit(:name, :file)
+  end
+
+  def add_directory_to_zip(directory, zipfile, path_prefix = "")
+    current_path = path_prefix.present? ? "#{path_prefix}/#{directory.name}" : directory.name
+
+    # adiciona os arquivos deste diretório
+    directory.file_entries.each do |file_entry|
+      if file_entry.file.attached?
+        file_path_in_zip = "#{current_path}/#{file_entry.name}"
+        zipfile.get_output_stream(file_path_in_zip) do |f|
+          f.write file_entry.file.download
+        end
+      end
+    end
+
+    # de forma recursiva é adicionado os subdiretórios
+    directory.subdirectories.each do |sub|
+      add_directory_to_zip(sub, zipfile, current_path)
+    end
   end
 end
